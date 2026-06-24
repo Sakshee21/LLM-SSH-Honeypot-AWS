@@ -1,4 +1,3 @@
-# LLM-SSH-Honeypot-AWS
 
 # LLM-SSH-Honeypot-AWS
 
