@@ -1,0 +1,86 @@
+# ===========================
+# AWS & Credentials
+# ===========================
+*.pem
+*.key
+.aws/
+credentials
+*credentials*
+*secret*
+*password*
+
+# ===========================
+# API Keys & Secrets
+# ===========================
+.env
+*.env
+.env.local
+secrets.yaml
+secrets.yml
+config.secret.*
+api_keys.txt
+
+# ===========================
+# Cowrie Logs (real attacker data)
+# Never push raw logs to GitHub
+# ===========================
+var/
+logs/
+*.log
+*.json.log
+cowrie.json
+data/raw/
+
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+cowrie-env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ===========================
+# Redis
+# ===========================
+dump.rdb
+*.rdb
+
+# ===========================
+# System Files
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================
+# IDE & Editor
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===========================
+# Terraform (later)
+# ===========================
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.tfvars
+
+# ===========================
+# Analysis outputs
+# ===========================
+data/raw/
+data/processed/
+*.csv
+*.pcap
