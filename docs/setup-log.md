@@ -238,3 +238,94 @@ Press Ctrl+C to stop watching.
 4. Collect baseline data for 1-2 weeks
 5. Deploy Beelzebub + Gemini on new instance
 6. Compare engagement metrics
+
+---
+
+## Date: 26 June 2026
+
+---
+
+## Updates — S3 Log Shipping and Elastic IP
+
+### Elastic IP Setup
+- Allocated Elastic IP from AWS console
+- Associated with honeypot-sg-01 instance
+- IP is now permanent and won't change on restart
+- Location: EC2 → Network & Security → Elastic IPs
+
+### IAM Role for S3 Access
+Created IAM role to allow EC2 to write to S3:
+- Role name: honeypot-ec2-s3-role
+- Policy: AmazonS3FullAccess
+- Attached to: honeypot-sg-01 instance
+- This allows the instance to upload logs without API keys
+
+### S3 Bucket Setup
+- Bucket name: honeypot-logs-sakshee
+- Region: ap-southeast-1 (Singapore)
+- Folder structure: Cowrie/Singapore/
+- All Cowrie logs sync here every 5 minutes
+
+### AWS CLI Installation
+```bash
+sudo apt install -y awscli
+aws --version
+# Verify S3 access
+aws s3 ls s3://honeypot-logs-sakshee/
+```
+
+### S3 Log Sync Setup
+Since ubuntu user couldn't read cowrie user's files directly,
+we use sudo -u cowrie to run the sync as the cowrie user:
+
+```bash
+# Manual sync command
+sudo -u cowrie aws s3 sync /home/cowrie/cowrie/var/log/cowrie/ \
+s3://honeypot-logs-sakshee/Cowrie/Singapore/
+
+# Automated via cron job (runs every 5 minutes)
+*/5 * * * * sudo -u cowrie aws s3 sync \
+/home/cowrie/cowrie/var/log/cowrie/ \
+s3://honeypot-logs-sakshee/Cowrie/Singapore/ --quiet
+```
+
+### Auto-restart on Reboot
+Added cron job to start Cowrie automatically if instance reboots:
+```bash
+@reboot sleep 30 && sudo -u cowrie bash -c \
+'cd /home/cowrie/cowrie && source cowrie-env/bin/activate && cowrie start'
+```
+
+### Current Status
+- Cowrie running on port 2222
+- Logs syncing to S3 every 5 minutes
+- Elastic IP attached (permanent address)
+- Instance left running overnight to collect attacker data
+
+### How to Verify Everything is Working
+```bash
+# Check Cowrie is running
+sudo su - cowrie
+cd cowrie
+source cowrie-env/bin/activate
+cowrie status
+
+# Check logs exist
+ls var/log/cowrie/
+
+# Check S3 sync works
+exit
+sudo -u cowrie aws s3 sync /home/cowrie/cowrie/var/log/cowrie/ \
+s3://honeypot-logs-sakshee/Cowrie/Singapore/
+
+# Verify files in S3
+aws s3 ls s3://honeypot-logs-sakshee/Cowrie/Singapore/
+```
+
+### Security Group Note
+If SSH stops working — your home IP may have changed.
+Fix:
+1. Go to whatismyip.com and note your current IP
+2. EC2 → Security Groups → honeypot-sg → Edit inbound rules
+3. Change port 22 source to My IP
+4. Save rules
